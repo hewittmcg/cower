@@ -1,0 +1,2 @@
+// Should be lexed to the same order as the Commands enum.
+moo mOo moO mOO Moo MOo MoO MOO OOO MMM OOM oom
