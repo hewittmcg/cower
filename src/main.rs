@@ -17,7 +17,24 @@ enum Command {
     RegAccess, // If register does not have a value, copy the current memory block value into it; otherwise, copy its value into the current memory block and clear the register.
     Write, // Print the contents of the current memory block to STDOUT as an ASCII character.
     Read, // Read an ASCII character from STDIN and store it in the current memory block.
-    Empty, // Does nothing.
+    Empty, // For values that we can't parse.
+}
+
+// Instruction set.
+// This is the same as the Command enum, but with an added sub-instruction set for loops.
+#[derive(Debug)]
+enum Instruction {
+    DecPtr,
+    IncPtr,
+    ExecVal,
+    RWCond,
+    DecVal,
+    IncVal,
+    ZeroVal,
+    RegAccess, 
+    Write,
+    Read,
+    Loop(Vec<Instruction>),
 }
 
 // Lexer to convert raw .cow source into a vector of COW opcodes.
@@ -41,7 +58,11 @@ fn lex(contents: String) -> Vec<Command> {
             "oom" => Command::Read,
             _ => Command::Empty,
         };
-        lexed.push(comm);
+
+        // We don't want empty commands getting into the lexer.
+        if !matches!(comm, Command::Empty) {
+            lexed.push(comm);
+        }
     }
     lexed
 }
