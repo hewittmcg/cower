@@ -1,6 +1,9 @@
 use std::env;
 use std::fs;
 
+// Value of the memory array.
+const MEM_SIZE: usize = 3000;
+
 // Refer to https://esolangs.org/wiki/COW.
 // These are ordered to match that page.
 #[derive(Debug)] // needed for debug prints
@@ -35,6 +38,12 @@ enum Instruction {
     Write,
     Read,
     Loop(Vec<Instruction>),
+}
+
+// COW register definition.
+struct Register {
+    value: u8,
+    empty: bool,
 }
 
 // Lexer to convert raw .cow source into a vector of COW opcodes.
@@ -143,6 +152,24 @@ fn parse(commands: Vec<Command>) -> Vec<Instruction> {
     instructions
 }
 
+fn exec(instructions: &Vec<Instruction>, mem: &mut Vec<u8>, ptr: &mut usize, reg: &mut Register) {
+    for instr in instructions {
+        match instr {
+            Instruction::DecPtr => *ptr -= 1,
+            Instruction::IncPtr =>  *ptr += 1,
+            Instruction::ExecVal => todo!(),
+            Instruction::RWCond => todo!(),
+            Instruction::DecVal => mem[*ptr] -= 1,
+            Instruction::IncVal => mem[*ptr] += 1,
+            Instruction::ZeroVal => mem[*ptr] = 0,
+            Instruction::RegAccess => todo!(),
+            Instruction::Write => print!("{}", mem[*ptr] as char),
+            Instruction::Read => todo!(),
+            Instruction::Loop(loop_instructions) => exec(loop_instructions, mem, ptr, reg), 
+        }
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     let file_path = &args[1];
@@ -157,5 +184,15 @@ fn main() {
 
     let instructions = parse(lexed);
 
-    dbg!("{}", instructions);
+    //dbg!("{}", instructions);
+
+    // Allocate memory for use when executing
+    let mut mem: Vec<u8> = vec![0; MEM_SIZE];
+    let mut ptr: usize = 0;
+    let mut reg = Register {
+        value: 0,
+        empty: false,
+    };
+
+    exec(&instructions, &mut mem, &mut ptr, &mut reg);
 }
