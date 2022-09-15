@@ -70,6 +70,8 @@ fn lex(contents: String) -> Vec<Command> {
 
 // Parse the commands into an instruction set to be run
 fn parse(commands: Vec<Command>) -> Vec<Instruction> {
+    //println!("parse called with len commands {}", commands.len());
+    //dbg!(&commands[0], &commands[1]);
     let mut instructions: Vec<Instruction> = Vec::new();
 
     // Variables for tracking the number of levels of nested loops.
@@ -88,11 +90,10 @@ fn parse(commands: Vec<Command>) -> Vec<Instruction> {
 
         // At loop level of 0, we want to actually parse the commands. Otherwise, we just look for the end of the loop and recurse.
         if loop_level == 0 {
+            //dbg!("if");
+            //dbg!(loop_level, &commands[i]);
             let instr = match commands[i] {
-                Command::LoopEnd => {
-                    dbg!("hit this failure at i = {}", i);
-                    panic!("Loop end with no loop start");
-                },
+                Command::LoopEnd => panic!("Loop end with no loop start"),
                 Command::DecPtr => Some(Instruction::DecPtr),
                 Command::IncPtr => Some(Instruction::IncPtr),
                 Command::ExecVal => Some(Instruction::ExecVal),
@@ -117,11 +118,12 @@ fn parse(commands: Vec<Command>) -> Vec<Instruction> {
             };
 
         } else {
+            //dbg!("else");
+            //dbg!(loop_level, &commands[i]);
             match commands[i] {
                 Command::LoopStart => {
+                    // Once we get past loop_level 0, we don't care about where the loop started since this will be parsed later on.
                     loop_level += 1;
-                    loop_start = i;
-                    // Ignore next command.
                     skip_next = true;
                 },
                 Command::LoopEnd => {
@@ -129,7 +131,6 @@ fn parse(commands: Vec<Command>) -> Vec<Instruction> {
 
                     // If this is the lowest loop level in this parse call, we want to add it as an instruction by parsing its contents.
                     // Avoid start/end of the loop
-                    // TODO test this, idk how rust vector splitting stuff works
                     if loop_level == 0 {
                         instructions.push(Instruction::Loop(parse(commands[(loop_start + 1)..i].to_vec())));
                     }
