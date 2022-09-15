@@ -160,11 +160,11 @@ fn exec(instructions: &Vec<Instruction>, mem: &mut Vec<u8>, ptr: &mut usize, reg
                     std::io::stdin().read_exact(&mut buf).expect("stdin read failed");
                     mem[*ptr] = buf[0];
                 } else {
-                    print!("{}", mem[*ptr] as char);
+                    print!("{}", mem[*ptr]);
                 }
             }
-            Instruction::DecVal => mem[*ptr] -= 1,
-            Instruction::IncVal => mem[*ptr] += 1,
+            Instruction::DecVal => mem[*ptr] = mem[*ptr].wrapping_sub(1u8),
+            Instruction::IncVal => mem[*ptr] = mem[*ptr].wrapping_add(1u8),
             Instruction::ZeroVal => mem[*ptr] = 0,
             Instruction::RegAccess => {
                 if reg.empty {
@@ -175,14 +175,17 @@ fn exec(instructions: &Vec<Instruction>, mem: &mut Vec<u8>, ptr: &mut usize, reg
                 
                 reg.empty = !reg.empty;
             }
-            Instruction::Write => print!("{}", mem[*ptr] as char),
+            Instruction::Write => print!("{}", mem[*ptr]),
             Instruction::Read => {
                 // Read just one byte.
                 let mut buf: [u8; 1] = [0; 1];
                 std::io::stdin().read_exact(&mut buf).expect("stdin read failed");
                 mem[*ptr] = buf[0];
             }
-            Instruction::Loop(loop_instructions) => exec(loop_instructions, mem, ptr, reg), 
+            Instruction::Loop(loop_instructions) => 
+            while mem[*ptr] != 0 {
+                exec(loop_instructions, mem, ptr, reg);
+            }
         }
     }
 }
@@ -203,7 +206,7 @@ fn main() {
     let mut ptr: usize = 0;
     let mut reg = Register {
         value: 0,
-        empty: false,
+        empty: true,
     };
 
     exec(&instructions, &mut mem, &mut ptr, &mut reg);
