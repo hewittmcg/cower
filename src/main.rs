@@ -1,5 +1,6 @@
 use std::env;
 use std::fs;
+use std::io::Read;
 
 // Value of the memory array.
 const MEM_SIZE: usize = 3000;
@@ -164,7 +165,12 @@ fn exec(instructions: &Vec<Instruction>, mem: &mut Vec<u8>, ptr: &mut usize, reg
             Instruction::ZeroVal => mem[*ptr] = 0,
             Instruction::RegAccess => todo!(),
             Instruction::Write => print!("{}", mem[*ptr] as char),
-            Instruction::Read => todo!(),
+            Instruction::Read => {
+                // Read just one byte.
+                let mut buf: [u8; 1] = [0; 1];
+                std::io::stdin().read_exact(&mut buf).expect("stdin read failed");
+                mem[*ptr] = buf[0];
+            }
             Instruction::Loop(loop_instructions) => exec(loop_instructions, mem, ptr, reg), 
         }
     }
@@ -173,18 +179,13 @@ fn exec(instructions: &Vec<Instruction>, mem: &mut Vec<u8>, ptr: &mut usize, reg
 fn main() {
     let args: Vec<String> = env::args().collect();
     let file_path = &args[1];
-    dbg!(file_path);
 
     let file_contents = fs::read_to_string(file_path)
         .expect("Unable to read file");
-    println!("{}", file_contents);
 
     let lexed = lex(file_contents);
-    //dbg!("{}", lexed);
 
     let instructions = parse(lexed);
-
-    //dbg!("{}", instructions);
 
     // Allocate memory for use when executing
     let mut mem: Vec<u8> = vec![0; MEM_SIZE];
