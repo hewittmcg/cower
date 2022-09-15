@@ -90,7 +90,7 @@ fn parse(commands: Vec<Command>) -> Vec<Instruction> {
 
     for i in 0..commands.len() {
         // Skip to next iteration if needed
-        if skip_next == true {
+        if skip_next {
             skip_next = false;
             continue;
         }
