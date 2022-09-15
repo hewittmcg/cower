@@ -50,7 +50,6 @@ struct Register {
 // Lexer to convert raw .cow source into a vector of COW opcodes.
 fn lex(contents: String) -> Vec<Command> {
     let contents_split = contents.split_whitespace().collect::<Vec<&str>>();
-    //println!("{:?}", contents_split);
     let mut lexed: Vec<Command> = Vec::new();
     for element in contents_split {
         let comm = match element {
@@ -80,8 +79,6 @@ fn lex(contents: String) -> Vec<Command> {
 
 // Parse the commands into an instruction set to be run
 fn parse(commands: Vec<Command>) -> Vec<Instruction> {
-    //println!("parse called with len commands {}", commands.len());
-    //dbg!(&commands[0], &commands[1]);
     let mut instructions: Vec<Instruction> = Vec::new();
 
     // Variables for tracking the number of levels of nested loops.
@@ -100,8 +97,6 @@ fn parse(commands: Vec<Command>) -> Vec<Instruction> {
 
         // At loop level of 0, we want to actually parse the commands. Otherwise, we just look for the end of the loop and recurse.
         if loop_level == 0 {
-            //dbg!("if");
-            //dbg!(loop_level, &commands[i]);
             let instr = match commands[i] {
                 Command::LoopEnd => panic!("Loop end with no loop start"),
                 Command::DecPtr => Some(Instruction::DecPtr),
@@ -128,8 +123,6 @@ fn parse(commands: Vec<Command>) -> Vec<Instruction> {
             };
 
         } else {
-            //dbg!("else");
-            //dbg!(loop_level, &commands[i]);
             match commands[i] {
                 Command::LoopStart => {
                     // Once we get past loop_level 0, we don't care about where the loop started since this will be parsed later on.
