@@ -158,12 +158,30 @@ fn exec(instructions: &Vec<Instruction>, mem: &mut Vec<u8>, ptr: &mut usize, reg
         match instr {
             Instruction::DecPtr => *ptr -= 1,
             Instruction::IncPtr =>  *ptr += 1,
-            Instruction::ExecVal => todo!(),
-            Instruction::RWCond => todo!(),
+            Instruction::ExecVal => todo!(), // this requires refactoring to implement
+            Instruction::RWCond => {
+                // This should be refactored when ExecVal is fixed.
+                if mem[*ptr] == 0 {
+                    // Read just one byte.
+                    let mut buf: [u8; 1] = [0; 1];
+                    std::io::stdin().read_exact(&mut buf).expect("stdin read failed");
+                    mem[*ptr] = buf[0];
+                } else {
+                    print!("{}", mem[*ptr] as char);
+                }
+            }
             Instruction::DecVal => mem[*ptr] -= 1,
             Instruction::IncVal => mem[*ptr] += 1,
             Instruction::ZeroVal => mem[*ptr] = 0,
-            Instruction::RegAccess => todo!(),
+            Instruction::RegAccess => {
+                if reg.empty {
+                    reg.value = mem[*ptr];
+                } else {
+                    mem[*ptr] = reg.value;
+                }
+                
+                reg.empty = !reg.empty;
+            }
             Instruction::Write => print!("{}", mem[*ptr] as char),
             Instruction::Read => {
                 // Read just one byte.
